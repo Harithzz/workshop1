@@ -7,7 +7,7 @@
             "command": "cl.exe",
             "args": [
                 "/EHsc",
-                "/Fe${workspaceFolder}\\bin\\app.exe",
+                "/Fe${workspaceFolder}\\app.exe",
                 "${workspaceFolder}\\src\\*.cpp",
                 "/IC:\\mysql-connector-c++-9.7.0-winx64\\mysql-connector-c++-9.7.0-winx64\\include",
                 "/link",
