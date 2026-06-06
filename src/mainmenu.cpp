@@ -1,6 +1,6 @@
 #include "../include/mainmenu.h"
 #include "../include/ExpiryTrack.h"
-#include "../include/StockMonitor.h"
+#include "../include/Sales.h"
 #include "../include/Report.h"
 #include "../include/screen.h"
 #include "../include/inventory.h"
@@ -18,7 +18,7 @@ void showMainMenu() {
         std::cout << "===FRESH ITEM INVENTORY SYSTEM===\n\n";
         std::cout << "1. Inventory Menu\n";
         std::cout << "2. Expiry tracking\n";
-        std::cout << "3. Stock Monitoring\n";
+        std::cout << "3. Sales\n";
         std::cout << "4. Reports\n";
         std::cout << "5. Exit\n\n";
         std::cout << "Choose an option: ";
@@ -41,7 +41,7 @@ void showMainMenu() {
                 showExpiryTrackingMenu();
                 break;
             case 3:
-                showStockMonitoringMenu();
+                showSalesMenu();
                 break;
             case 4:
                 showReportMenu();
