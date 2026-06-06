@@ -61,7 +61,6 @@ void showMenu() {
     cout << "4. Remove item\n";
     cout << "5. Search item\n";
     cout << "6. Back to main menu\n";
-    cout << "7. Exit\n";
     cout << "Choose an option: ";
 }
 
@@ -355,12 +354,8 @@ void runInventoryModule() {
             case 6:
                 closeDatabase();
                 return; // Back to main menu
-            case 7:
-                closeDatabase();
-                std::cout << "Goodbye!\n";
-                std::exit(0);
             default:
-                showTemporaryMessage("Please choose a valid option (1-7). Please wait...");
+                showTemporaryMessage("Please choose a valid option (1-6). Please wait...");
                 break;
         }
     }

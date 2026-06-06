@@ -1,4 +1,4 @@
-﻿#include "../include/inventory.h"
+﻿#include "../include/db.h"
 #include "../include/login.h"
 #include "../include/mainmenu.h"
 #include "../include/screen.h"
@@ -32,15 +32,7 @@ int main() {
 
     showLoginScreen();
 
-    while (true) {
-        int choice = showMainMenu();
-
-        if (choice == 1) {
-            runInventoryModule();
-        } else if (choice == 5) {
-            break;
-        }
-    }
+    showMainMenu();
 
     closeDatabase();
     return 0;
