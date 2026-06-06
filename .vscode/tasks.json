@@ -6,9 +6,8 @@
             "label": "C/C++: cl.exe build active file",
             "command": "cl.exe",
             "args": [
-                "/Zi",
                 "/EHsc",
-                "/Fe${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "/Fe${workspaceFolder}\\bin\\app.exe",
                 "${workspaceFolder}\\src\\*.cpp",
                 "/IC:\\mysql-connector-c++-9.7.0-winx64\\mysql-connector-c++-9.7.0-winx64\\include",
                 "/link",
