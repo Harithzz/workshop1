@@ -31,4 +31,12 @@ bool deleteItemFromDatabase(int itemID);
 // Sales-related function
 bool insertSale(int userID, int itemID, int quantity, const std::string& saleDate);
 
+// Report-related functions
+bool getLowStockItems(int threshold, std::vector<Item>& lowStockItems);
+bool getExpiringItems(int daysAhead, std::vector<Item>& expiringItems);
+bool getSalesSummary(const std::string& fromDate, const std::string& toDate,
+                     double& totalRevenue, int& totalItemsSold);
+bool getInventoryValuation(double& totalValue);
+bool getTopSellingItems(int limit, std::vector<std::pair<std::string, int>>& items);
+
 #endif // DB_H

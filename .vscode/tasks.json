@@ -7,6 +7,7 @@
             "command": "cl.exe",
             "args": [
                 "/EHsc",
+                "/std:c++17",               // <-- Add this line
                 "/Fe${workspaceFolder}\\app.exe",
                 "${workspaceFolder}\\src\\*.cpp",
                 "/IC:\\mysql-connector-c++-9.7.0-winx64\\mysql-connector-c++-9.7.0-winx64\\include",
