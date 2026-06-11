@@ -80,20 +80,6 @@ bool connectDatabase() {
             ) ENGINE=InnoDB
         )");
 
-        stmt->execute(R"(
-            CREATE TABLE IF NOT EXISTS waste (
-                wasteID INT AUTO_INCREMENT PRIMARY KEY,
-                itemID INT NOT NULL,
-                quantity INT NOT NULL,
-                waste_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                reason VARCHAR(100) NOT NULL,
-
-                FOREIGN KEY (itemID) REFERENCES items(itemID)
-                    ON UPDATE CASCADE
-                    ON DELETE RESTRICT
-            ) ENGINE=InnoDB
-        )");
-
         unique_ptr<sql::PreparedStatement> insertAdmin(
             conn->prepareStatement(
                 "INSERT IGNORE INTO users (username, password) VALUES (?, ?)"
