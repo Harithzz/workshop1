@@ -36,6 +36,9 @@ bool loadItemsFromDatabase(std::vector<Item>& inventory, int& nextId);
 bool updateItemQuantityInDatabase(int itemID, int quantity);
 bool deleteItemFromDatabase(int itemID);
 
+// NEW: Search items by name (partial match) directly from DB
+bool searchItemsByName(const std::string& name, std::vector<Item>& results);
+
 // Sales-related function
 bool insertSale(int userID, int itemID, int quantity, const std::string& saleDate);
 

@@ -494,3 +494,38 @@ bool getInventoryValuationDetails(double& totalValue,
         return false;
     }
 }
+
+// ========== NEW FUNCTION ==========
+bool searchItemsByName(const string& name, vector<Item>& results) {
+    try {
+        unique_ptr<sql::Connection> conn = openConnection();
+        unique_ptr<sql::PreparedStatement> stmt(
+            conn->prepareStatement(
+                "SELECT itemID, name, category, price, "
+                "DATE_FORMAT(expiry_date, '%Y-%m-%d') AS expiryDate, quantity "
+                "FROM items "
+                "WHERE name LIKE ? "
+                "ORDER BY name"
+            )
+        );
+        string pattern = "%" + name + "%";
+        stmt->setString(1, pattern);
+        unique_ptr<sql::ResultSet> res(stmt->executeQuery());
+
+        results.clear();
+        while (res->next()) {
+            Item item;
+            item.id = res->getInt("itemID");
+            item.name = res->getString("name");
+            item.category = res->getString("category");
+            item.price = res->getDouble("price");
+            item.expiryDate = res->getString("expiryDate");
+            item.quantity = res->getInt("quantity");
+            results.push_back(item);
+        }
+        return true;
+    } catch (sql::SQLException& e) {
+        printDatabaseError(e);
+        return false;
+    }
+}

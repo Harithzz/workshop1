@@ -315,10 +315,10 @@ void removeItem(vector<Item>& inventory) {
     }
 
     int itemId = inventory[index].id;
-    inventory.erase(inventory.begin() + index);
 
     if (deleteItemFromDatabase(itemId)) {
         cout << "\nItem removed from storage successfully.\n";
+        inventory.erase(inventory.begin() + index);
     } else {
         cout << "\nItem removed locally (storage delete failed).\n";
     }
@@ -327,34 +327,46 @@ void removeItem(vector<Item>& inventory) {
     pauseMenu();
 }
 
-void searchItem(const vector<Item>& inventory) {
+// ========== MODIFIED FUNCTION – now queries DB directly ==========
+void searchItem(const vector<Item>& /* inventory */) {
     clearScreen();
     cout << "=== Search Item ===\n\n";
-    
-    if (inventory.empty()) {
-        cout << "Inventory is empty.\n";
-    } else {
-        string name;
-        cout << "Enter item name to search: ";
-        getline(cin, name);
 
-        int index = findItemIndexByName(inventory, name);
+    string name;
+    cout << "Enter item name to search: ";
+    getline(cin, name);
 
-        if (index == -1) {
-            cout << "\nItem not found.\n";
+    vector<Item> results;
+    if (searchItemsByName(name, results)) {
+        if (results.empty()) {
+            cout << "\nNo items found matching the name.\n";
         } else {
-            const Item& item = inventory[index];
-
-            cout << "\nFound item:\n";
-            cout << "ID: " << item.id << "\n";
-            cout << "Name: " << item.name << "\n";
-            cout << "Quantity: " << item.quantity << "\n";
-            cout << "Price: RM " << fixed << setprecision(2) << item.price << "\n";
-            cout << "Category: " << item.category << "\n";
-            cout << "Expiry Date: " << item.expiryDate << "\n";
+            cout << "\nFound " << results.size() << " item(s):\n\n";
+            cout << left
+                << setw(5)  << "ID"
+                << setw(20) << "Name"
+                << setw(8)  << "Qty"
+                << setw(15) << "Price (RM)"
+                << setw(30) << "Category"
+                << "Expiry Date\n";
+            cout << string(90, '-') << "\n";
+            for (const auto& item : results) {
+                stringstream ss;
+                ss << "RM " << fixed << setprecision(2) << item.price;
+                cout << left
+                    << setw(5)  << item.id
+                    << setw(20) << item.name
+                    << setw(8)  << item.quantity
+                    << setw(15) << ss.str()
+                    << setw(30) << item.category
+                    << item.expiryDate
+                    << "\n";
+            }
         }
+    } else {
+        cout << "\nDatabase error occurred while searching.\n";
     }
-    
+
     pauseMenu();
 }
 

@@ -52,27 +52,76 @@ static void salesSummaryReport() {
     waitForEnter();
 }
 
-// 2. Expired Items Report (no prompt, already expired)
+//Expired Items Report 
 static void expiringItemsReport() {
     vector<Item> expired;
-    if (getExpiredItems(expired)) {
-        if (expired.empty()) {
-            cout << "\nNo expired items.\n";
-        } else {
-            cout << "\n=== Expired Items Report ===\n";
-            for (const auto& item : expired) {
-                double totalValue = item.price * item.quantity;
-                int stars = static_cast<int>(totalValue / 100);
-                string bar(stars, '*'); 
-
-                cout << item.name << " (" << item.category << "): "
-                     << bar << " " << item.quantity << " units "
-                     << "(Total lost: RM " << fixed << setprecision(2) << totalValue << ")\n";
-            }
-        }
-    } else {
+    if (!getExpiredItems(expired)) {
         cerr << "Failed to retrieve expired items.\n";
+        waitForEnter();
+        return;
     }
+
+    if (expired.empty()) {
+        cout << "\nNo expired items.\n";
+        waitForEnter();
+        return;
+    }
+
+    // Compute lost value for each item and find the maximum
+    vector<double> lostValues;
+    double maxLost = 0.0;
+    for (const auto& item : expired) {
+        double lost = item.price * item.quantity;
+        lostValues.push_back(lost);
+        if (lost > maxLost) maxLost = lost;
+    }
+
+    // Column widths (adjust as needed)
+    const int NAME_WIDTH   = 20;
+    const int CAT_WIDTH    = 15;
+    const int QTY_WIDTH    = 5;
+    const int EXPIRY_WIDTH = 12;
+    const int LOST_WIDTH   = 15;
+    const int BAR_WIDTH    = 20;
+
+    // Header
+    cout << "\n=== Expired Items Report ===\n\n";
+    cout << left
+         << setw(NAME_WIDTH)   << "Item"
+         << setw(CAT_WIDTH)    << "Category"
+         << setw(QTY_WIDTH)    << "Qty"
+         << setw(EXPIRY_WIDTH) << "Expiry Date"
+         << setw(LOST_WIDTH)   << "Lost Value (RM)"
+         << "Impact\n";
+    cout << string(NAME_WIDTH + CAT_WIDTH + QTY_WIDTH + EXPIRY_WIDTH + LOST_WIDTH + BAR_WIDTH + 5, '-') << "\n";
+
+    // Print each expired item
+    for (size_t i = 0; i < expired.size(); ++i) {
+        const Item& item = expired[i];
+        double lost = lostValues[i];
+        int percent = (maxLost > 0) ? static_cast<int>((lost / maxLost) * 100) : 0;
+
+        // Build bar: full blocks for filled, light blocks for empty
+        int filled = (percent * BAR_WIDTH) / 100;
+        string bar;
+        bar.append(filled, '█');                 // filled portion
+        bar.append(BAR_WIDTH - filled, '░');     // empty portion
+
+        // Priority label based on lost value percentage
+        string label;
+        if (percent >= 70)      label = "[High]";
+        else if (percent >= 30) label = "[Medium]";
+        else                    label = "[Low]";
+
+        cout << left
+             << setw(NAME_WIDTH)   << item.name
+             << setw(CAT_WIDTH)    << item.category
+             << setw(QTY_WIDTH)    << item.quantity
+             << setw(EXPIRY_WIDTH) << item.expiryDate
+             << setw(LOST_WIDTH)   << fixed << setprecision(2) << lost
+             << bar << " " << label << "\n";
+    }
+
     waitForEnter();
 }
 
