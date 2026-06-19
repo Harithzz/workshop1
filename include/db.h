@@ -14,6 +14,14 @@ struct Item {
     std::string expiryDate;
 };
 
+// New structure for per‑item sales summary
+struct SalesItemSummary {
+    int itemID;
+    std::string name;
+    int quantitySold;
+    double totalSales;
+};
+
 // Database initialization / teardown
 bool connectDatabase(); // connects to MySQL and auto-creates database/tables
 void closeDatabase();
@@ -32,11 +40,11 @@ bool deleteItemFromDatabase(int itemID);
 bool insertSale(int userID, int itemID, int quantity, const std::string& saleDate);
 
 // Report-related functions
-bool getLowStockItems(int threshold, std::vector<Item>& lowStockItems);
-bool getExpiringItems(int daysAhead, std::vector<Item>& expiringItems);
-bool getSalesSummary(const std::string& fromDate, const std::string& toDate,
-                     double& totalRevenue, int& totalItemsSold);
-bool getInventoryValuation(double& totalValue);
-bool getTopSellingItems(int limit, std::vector<std::pair<std::string, int>>& items);
+bool getSalesItemsSummary(const std::string& fromDate, const std::string& toDate,
+                         std::vector<SalesItemSummary>& items);
+bool getInventoryValuationDetails(double& totalValue,
+                                 std::vector<std::pair<std::string, double>>& itemValues);
+bool getExpiredItems(std::vector<Item>& expiredItems);
+
 
 #endif // DB_H

@@ -97,14 +97,14 @@ static void printItemHeader() {
         << std::left
         << std::setw(6) << "ID"
         << std::setw(22) << "Name"
-        << std::setw(17) << "Category"
+        << std::setw(30) << "Category"
         << std::setw(10) << "Qty"
         << std::setw(14) << "Expiry"
         << std::setw(16) << "Days left"
         << "Status"
         << '\n';
 
-    std::cout << std::string(95, '-') << '\n';
+    std::cout << std::string(109, '-') << '\n';
 }
 
 static void printItemRow(const Item& item, int daysUntilExpiry, const std::string& status) {
@@ -112,7 +112,7 @@ static void printItemRow(const Item& item, int daysUntilExpiry, const std::strin
         << std::left
         << std::setw(6) << item.id
         << std::setw(22) << item.name
-        << std::setw(17) << item.category
+        << std::setw(30) << item.category
         << std::setw(10) << item.quantity
         << std::setw(14) << item.expiryDate
         << std::setw(16) << daysUntilExpiry
@@ -157,7 +157,7 @@ static void checkAllExpiryDates() {
                 << std::left
                 << std::setw(6) << item.id
                 << std::setw(22) << item.name
-                << std::setw(17) << item.category
+                << std::setw(30) << item.category
                 << std::setw(10) << item.quantity
                 << std::setw(14) << item.expiryDate
                 << std::setw(16) << "-"

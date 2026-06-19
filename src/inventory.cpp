@@ -93,11 +93,11 @@ void listItems(const vector<Item>& inventory) {
             << setw(5)  << "ID"
             << setw(20) << "Name"
             << setw(8)  << "Qty"
-            << setw(12) << "Price (RM)"
-            << setw(20) << "Category"
+            << setw(15) << "Price (RM)"
+            << setw(30) << "Category"
             << "Expiry Date\n";
 
-        cout << string(75, '-') << "\n";
+        cout << string(90, '-') << "\n";
 
         for (const auto& item : inventory) {
             stringstream ss;
@@ -107,8 +107,8 @@ void listItems(const vector<Item>& inventory) {
                 << setw(5)  << item.id
                 << setw(20) << item.name
                 << setw(8)  << item.quantity
-                << setw(12) << ss.str()
-                << setw(20) << item.category
+                << setw(15) << ss.str()
+                << setw(30) << item.category
                 << item.expiryDate
                 << "\n";
         }
@@ -190,9 +190,36 @@ void updateQuantity(vector<Item>& inventory) {
         pauseMenu();
         return;
     }
+     else { // Display the inventory for the user to see available items
+        cout << "Current Inventory\n";
+        cout << "-----------------\n\n";
+        cout << left
+            << setw(5)  << "ID"
+            << setw(20) << "Name"
+            << setw(8)  << "Qty"
+            << setw(15) << "Price (RM)"
+            << setw(30) << "Category"
+            << "Expiry Date\n";
+
+        cout << string(90, '-') << "\n";
+
+        for (const auto& item : inventory) {
+            stringstream ss;
+            ss << "RM " << fixed << setprecision(2) << item.price;
+
+            cout << left
+                << setw(5)  << item.id
+                << setw(20) << item.name
+                << setw(8)  << item.quantity
+                << setw(15) << ss.str()
+                << setw(30) << item.category
+                << item.expiryDate
+                << "\n";
+        }
+    }
 
     int id;
-    cout << "Enter item ID to update: ";
+    cout << "\nEnter item ID to update: ";
 
     if (!(cin >> id)) {
         cout << "Invalid ID.\n";
@@ -240,9 +267,36 @@ void removeItem(vector<Item>& inventory) {
         pauseMenu();
         return;
     }
+    else { // Display the inventory for the user to see available items
+        cout << "Current Inventory\n";
+        cout << "-----------------\n\n";
+        cout << left
+            << setw(5)  << "ID"
+            << setw(20) << "Name"
+            << setw(8)  << "Qty"
+            << setw(15) << "Price (RM)"
+            << setw(30) << "Category"
+            << "Expiry Date\n";
+    
+        cout << string(90, '-') << "\n";
+    
+        for (const auto& item : inventory) {
+            stringstream ss;
+            ss << "RM " << fixed << setprecision(2) << item.price;
+    
+            cout << left
+                << setw(5)  << item.id
+                << setw(20) << item.name
+                << setw(8)  << item.quantity
+                << setw(15) << ss.str()
+                << setw(30) << item.category
+                << item.expiryDate
+                << "\n";
+        }
+    }
 
     int id;
-    cout << "Enter item ID to remove: ";
+    cout << "\nEnter item ID to remove: ";
 
     if (!(cin >> id)) {
         cout << "Invalid ID.\n";

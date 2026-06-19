@@ -392,52 +392,22 @@ bool insertSale(int userID, int itemID, int quantity, const string& saleDate) {
 // Report implementations
 // -------------------------------------------------------------------
 
-bool getLowStockItems(int threshold, vector<Item>& lowStockItems) {
+
+
+bool getExpiredItems(vector<Item>& expiredItems) {
     try {
         unique_ptr<sql::Connection> conn = openConnection();
-        unique_ptr<sql::PreparedStatement> stmt(
-            conn->prepareStatement(
+        unique_ptr<sql::Statement> stmt(conn->createStatement());
+        unique_ptr<sql::ResultSet> res(
+            stmt->executeQuery(
                 "SELECT itemID, name, category, price, "
                 "DATE_FORMAT(expiry_date, '%Y-%m-%d') AS expiryDate, quantity "
-                "FROM items WHERE quantity <= ? ORDER BY quantity ASC"
-            )
-        );
-        stmt->setInt(1, threshold);
-        unique_ptr<sql::ResultSet> res(stmt->executeQuery());
-
-        lowStockItems.clear();
-        while (res->next()) {
-            Item item;
-            item.id = res->getInt("itemID");
-            item.name = res->getString("name");
-            item.category = res->getString("category");
-            item.price = res->getDouble("price");
-            item.expiryDate = res->getString("expiryDate");
-            item.quantity = res->getInt("quantity");
-            lowStockItems.push_back(item);
-        }
-        return true;
-    } catch (sql::SQLException& e) {
-        printDatabaseError(e);
-        return false;
-    }
-}
-
-bool getExpiringItems(int daysAhead, vector<Item>& expiringItems) {
-    try {
-        unique_ptr<sql::Connection> conn = openConnection();
-        unique_ptr<sql::PreparedStatement> stmt(
-            conn->prepareStatement(
-                "SELECT itemID, name, category, price, "
-                "DATE_FORMAT(expiry_date, '%Y-%m-%d') AS expiryDate, quantity "
-                "FROM items WHERE expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY) "
+                "FROM items WHERE expiry_date < CURDATE() "
                 "ORDER BY expiry_date ASC"
             )
         );
-        stmt->setInt(1, daysAhead);
-        unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
-        expiringItems.clear();
+        expiredItems.clear();
         while (res->next()) {
             Item item;
             item.id = res->getInt("itemID");
@@ -446,7 +416,7 @@ bool getExpiringItems(int daysAhead, vector<Item>& expiringItems) {
             item.price = res->getDouble("price");
             item.expiryDate = res->getString("expiryDate");
             item.quantity = res->getInt("quantity");
-            expiringItems.push_back(item);
+            expiredItems.push_back(item);
         }
         return true;
     } catch (sql::SQLException& e) {
@@ -455,27 +425,34 @@ bool getExpiringItems(int daysAhead, vector<Item>& expiringItems) {
     }
 }
 
-bool getSalesSummary(const string& fromDate, const string& toDate,
-                     double& totalRevenue, int& totalItemsSold) {
+bool getSalesItemsSummary(const string& fromDate, const string& toDate,
+                          vector<SalesItemSummary>& items) {
     try {
         unique_ptr<sql::Connection> conn = openConnection();
         unique_ptr<sql::PreparedStatement> stmt(
             conn->prepareStatement(
-                "SELECT SUM(i.price * s.quantity_sold) AS revenue, SUM(s.quantity_sold) AS items_sold "
-                "FROM sales s JOIN items i ON s.itemID = i.itemID "
-                "WHERE s.sale_date BETWEEN ? AND ?"
+                "SELECT i.itemID, i.name, "
+                "SUM(s.quantity_sold) AS total_qty, "
+                "SUM(i.price * s.quantity_sold) AS total_sales "
+                "FROM sales s "
+                "JOIN items i ON s.itemID = i.itemID "
+                "WHERE s.sale_date BETWEEN ? AND ? "
+                "GROUP BY i.itemID "
+                "ORDER BY total_sales DESC"
             )
         );
         stmt->setString(1, fromDate);
         stmt->setString(2, toDate);
         unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
-        if (res->next()) {
-            totalRevenue = res->getDouble("revenue");
-            totalItemsSold = res->getInt("items_sold");
-        } else {
-            totalRevenue = 0.0;
-            totalItemsSold = 0;
+        items.clear();
+        while (res->next()) {
+            SalesItemSummary s;
+            s.itemID = res->getInt("itemID");
+            s.name = res->getString("name");
+            s.quantitySold = res->getInt("total_qty");
+            s.totalSales = res->getDouble("total_sales");
+            items.push_back(s);
         }
         return true;
     } catch (sql::SQLException& e) {
@@ -484,42 +461,32 @@ bool getSalesSummary(const string& fromDate, const string& toDate,
     }
 }
 
-bool getInventoryValuation(double& totalValue) {
+bool getInventoryValuationDetails(double& totalValue,
+                                  vector<pair<string, double>>& itemValues) {
     try {
         unique_ptr<sql::Connection> conn = openConnection();
         unique_ptr<sql::Statement> stmt(conn->createStatement());
-        unique_ptr<sql::ResultSet> res(
+        
+        // Total valuation
+        unique_ptr<sql::ResultSet> totalRes(
             stmt->executeQuery("SELECT SUM(price * quantity) AS total_value FROM items")
         );
-
-        if (res->next()) {
-            totalValue = res->getDouble("total_value");
-        } else {
+        if (totalRes->next())
+            totalValue = totalRes->getDouble("total_value");
+        else
             totalValue = 0.0;
-        }
-        return true;
-    } catch (sql::SQLException& e) {
-        printDatabaseError(e);
-        return false;
-    }
-}
 
-bool getTopSellingItems(int limit, vector<pair<string, int>>& items) {
-    try {
-        unique_ptr<sql::Connection> conn = openConnection();
-        unique_ptr<sql::PreparedStatement> stmt(
-            conn->prepareStatement(
-                "SELECT i.name, SUM(s.quantity_sold) AS total_sold "
-                "FROM sales s JOIN items i ON s.itemID = i.itemID "
-                "GROUP BY i.itemID ORDER BY total_sold DESC LIMIT ?"
+        // Per‑item valuation
+        unique_ptr<sql::ResultSet> itemRes(
+            stmt->executeQuery(
+                "SELECT name, price * quantity AS item_value FROM items "
+                "WHERE quantity > 0 ORDER BY name"
             )
         );
-        stmt->setInt(1, limit);
-        unique_ptr<sql::ResultSet> res(stmt->executeQuery());
-
-        items.clear();
-        while (res->next()) {
-            items.emplace_back(res->getString("name"), res->getInt("total_sold"));
+        itemValues.clear();
+        while (itemRes->next()) {
+            itemValues.emplace_back(itemRes->getString("name"),
+                                    itemRes->getDouble("item_value"));
         }
         return true;
     } catch (sql::SQLException& e) {
