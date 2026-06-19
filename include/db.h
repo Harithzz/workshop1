@@ -22,6 +22,13 @@ struct SalesItemSummary {
     double totalSales;
 };
 
+// NEW struct for inventory valuation details (includes quantity)
+struct InventoryItemValuation {
+    std::string name;
+    int quantity;
+    double value;   // price * quantity
+};
+
 // Database initialization / teardown
 bool connectDatabase(); // connects to MySQL and auto-creates database/tables
 void closeDatabase();
@@ -46,7 +53,7 @@ bool insertSale(int userID, int itemID, int quantity, const std::string& saleDat
 bool getSalesItemsSummary(const std::string& fromDate, const std::string& toDate,
                          std::vector<SalesItemSummary>& items);
 bool getInventoryValuationDetails(double& totalValue,
-                                 std::vector<std::pair<std::string, double>>& itemValues);
+                                 std::vector<InventoryItemValuation>& itemDetails);
 bool getExpiredItems(std::vector<Item>& expiredItems);
 
 

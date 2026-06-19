@@ -78,10 +78,10 @@ static void expiringItemsReport() {
 
     // Column widths (adjust as needed)
     const int NAME_WIDTH   = 20;
-    const int CAT_WIDTH    = 15;
-    const int QTY_WIDTH    = 5;
-    const int EXPIRY_WIDTH = 12;
-    const int LOST_WIDTH   = 15;
+    const int CAT_WIDTH    = 25;
+    const int QTY_WIDTH    = 7;
+    const int EXPIRY_WIDTH = 15;
+    const int LOST_WIDTH   = 25;
     const int BAR_WIDTH    = 20;
 
     // Header
@@ -93,7 +93,7 @@ static void expiringItemsReport() {
          << setw(EXPIRY_WIDTH) << "Expiry Date"
          << setw(LOST_WIDTH)   << "Lost Value (RM)"
          << "Impact\n";
-    cout << string(NAME_WIDTH + CAT_WIDTH + QTY_WIDTH + EXPIRY_WIDTH + LOST_WIDTH + BAR_WIDTH + 5, '-') << "\n";
+    cout << string(NAME_WIDTH + CAT_WIDTH + QTY_WIDTH + EXPIRY_WIDTH + LOST_WIDTH + BAR_WIDTH + 8, '-') << "\n";
 
     // Print each expired item
     for (size_t i = 0; i < expired.size(); ++i) {
@@ -104,8 +104,8 @@ static void expiringItemsReport() {
         // Build bar: full blocks for filled, light blocks for empty
         int filled = (percent * BAR_WIDTH) / 100;
         string bar;
-        bar.append(filled, '█');                 // filled portion
-        bar.append(BAR_WIDTH - filled, '░');     // empty portion
+        bar.append(filled, '#');                 // filled portion
+        bar.append(BAR_WIDTH - filled, '*');     // empty portion
 
         // Priority label based on lost value percentage
         string label;
@@ -128,17 +128,21 @@ static void expiringItemsReport() {
 // 3. Inventory Valuation (total + per item)
 static void inventoryValuation() {
     double totalValue;
-    vector<pair<string, double>> itemValues;
-    if (getInventoryValuationDetails(totalValue, itemValues)) {
+    vector<InventoryItemValuation> itemDetails;
+    if (getInventoryValuationDetails(totalValue, itemDetails)) {
         cout << "\n=== Inventory Report ===\n";
         cout << "Total price for overall remaining stock: RM "
              << fixed << setprecision(2) << totalValue << "\n\n";
 
-        if (!itemValues.empty()) {
-            cout << "items\n-----\n";
-            for (const auto& [name, value] : itemValues) {
-                cout << name << ": RM " << fixed << setprecision(2) << value << "\n";
+        if (!itemDetails.empty()) {
+            cout << "Items\n-----\n";
+            for (const auto& detail : itemDetails) {
+                // Display: name (quantity) : RM value
+                cout << detail.name << " (" << detail.quantity << " units): RM "
+                     << fixed << setprecision(2) << detail.value << "\n";
             }
+        } else {
+            cout << "No items with positive quantity.\n";
         }
     } else {
         cerr << "Failed to compute inventory report.\n";

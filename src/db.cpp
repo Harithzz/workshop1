@@ -462,7 +462,7 @@ bool getSalesItemsSummary(const string& fromDate, const string& toDate,
 }
 
 bool getInventoryValuationDetails(double& totalValue,
-                                  vector<pair<string, double>>& itemValues) {
+                                  vector<InventoryItemValuation>& itemDetails) {
     try {
         unique_ptr<sql::Connection> conn = openConnection();
         unique_ptr<sql::Statement> stmt(conn->createStatement());
@@ -476,17 +476,20 @@ bool getInventoryValuationDetails(double& totalValue,
         else
             totalValue = 0.0;
 
-        // Per‑item valuation
+        // Per‑item valuation with quantity
         unique_ptr<sql::ResultSet> itemRes(
             stmt->executeQuery(
-                "SELECT name, price * quantity AS item_value FROM items "
+                "SELECT name, quantity, price * quantity AS item_value FROM items "
                 "WHERE quantity > 0 ORDER BY name"
             )
         );
-        itemValues.clear();
+        itemDetails.clear();
         while (itemRes->next()) {
-            itemValues.emplace_back(itemRes->getString("name"),
-                                    itemRes->getDouble("item_value"));
+            InventoryItemValuation detail;
+            detail.name     = itemRes->getString("name");
+            detail.quantity = itemRes->getInt("quantity");
+            detail.value    = itemRes->getDouble("item_value");
+            itemDetails.push_back(detail);
         }
         return true;
     } catch (sql::SQLException& e) {
