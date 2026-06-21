@@ -174,8 +174,14 @@ void showReportMenu() {
             case 1: salesSummaryReport(); break;
             case 2: expiringItemsReport(); break;
             case 3: inventoryValuation(); break;
-            case 4: cout << "Returning to main menu...\n"; break;
-            default: cout << "Invalid choice. Please try again.\n";
+
+            case 4: 
+                cout << "Returning to main menu...\n"; break;
+
+            default: 
+                cout << "Invalid choice. Please try again.\n";
+                waitForEnter();
+                break;
         }
         // No external pause here – each report handles its own pause.
     } while (choice != 4);
